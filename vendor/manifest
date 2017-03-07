@@ -6,6 +6,12 @@
 			"repository": "https://github.com/boltdb/bolt",
 			"revision": "e9cf4fae01b5a8ff89d0ec6b32f0d9c9f79aefdd",
 			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gomiddleware/mux",
+			"repository": "https://github.com/gomiddleware/mux",
+			"revision": "cb5709b593789095df3d228080ed2bec60211349",
+			"branch": "master"
 		}
 	]
 }
