@@ -35,6 +35,10 @@ func check(err error) {
 	}
 }
 
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 func main() {
 	// setup
 	baseUrl := os.Getenv("POW_BASE_URL")
