@@ -86,10 +86,11 @@ func main() {
 	m.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue("url")
 
-		id := Id()
-		now := time.Now()
+		// setup a few things
+		var id string
+		now := time.Now().UTC()
 		shortUrl := ShortUrl{
-			Id:       id,
+			Id:       "", // filled in later
 			Url:      url,
 			Inserted: now,
 			Updated:  now,
@@ -98,8 +99,25 @@ func main() {
 		// ToDo: validate the URL, until then, just put it into the right bucket
 
 		err := db.Update(func(tx *bolt.Tx) error {
-			// get the bucket and it's next sequence number
-			// b := tx.Bucket(urlBucketName)
+			// keep generating IDs until we find a unique one
+			for {
+				// generate a new Id
+				id = Id()
+				fmt.Printf("id=%s\n", id)
+
+				// see if it already exists
+				v, err := rod.Get(tx, urlBucketNameStr, id)
+				if err != nil {
+					return err
+				}
+				if v == nil {
+					// this id does not yet exist, so quite the loop
+					break
+				}
+				// ID exists, loop again ...
+			}
+
+			shortUrl.Id = id
 			return rod.PutJson(tx, urlBucketNameStr, id, shortUrl)
 		})
 
@@ -108,6 +126,7 @@ func main() {
 			return
 		}
 
+		fmt.Fprintf(w, "id=%s\n", shortUrl.Id)
 		fmt.Fprintf(w, "url=%s\n", url)
 	})
 
