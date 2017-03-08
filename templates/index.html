@@ -1,41 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="icon" href="/favicon.ico">
-    <title>pow.gd - An Open Source Personal URL Shortener</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" >
-    <link rel="stylesheet" href="/s/css/styles.css">
-  </head>
-
-  <body>
-
-    <div class="container">
-      <div class="header clearfix">
-        <nav>
-          <ul class="nav nav-pills float-right">
-            <li class="nav-item">
-              <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/about">About</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/contact">Contact</a>
-            </li>
-          </ul>
-        </nav>
-        <h3 class="text-muted">pow.gd <small>by <a href="https://appsattic.com" target="_new">AppsAttic</a></small></h3>
-      </div>
+{{ template "header.html" . }}
 
       <div class="jumbotron">
-        <h1 class="display-3">Shorten your URLs</h1>
+        <h1 class="display-3">Pow!</h1>
+        <h1 class="display-5">Shorten your URLs</h1>
         <p class="lead">
-          Feel free to use this service, or <a href="https://github.com/appsattic/pow.gd">download and run</a> on your
-          own servers. It's free software and free to use.
+          This service is free to use,
+          or <a href="https://github.com/appsattic/pow.gd">download and run</a>
+          your own.
         </p>
         <form action="/" method="post">
           <label>
@@ -70,13 +41,4 @@
         </div>
       </div>
 
-      <footer class="footer">
-        <p>&copy; AppsAttic 2017</p>
-      </footer>
-
-    </div>
-    <!-- /container -->
-
-    <script src="/s/js/ie10.js"></script>
-  </body>
-</html>
+{{ template "footer.html" . }}
