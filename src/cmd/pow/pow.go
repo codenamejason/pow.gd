@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -15,6 +16,18 @@ import (
 
 var urlBucketName = []byte("url")
 var urlBucketNameStr = "url"
+
+const idChars string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+const idCharLen = len(idChars)
+
+func Id() string {
+	str := ""
+	for i := 0; i < 8; i++ {
+		r := rand.Intn(idCharLen)
+		str = str + string(idChars[r])
+	}
+	return str
+}
 
 func check(err error) {
 	if err != nil {
@@ -69,7 +82,7 @@ func main() {
 	m.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue("url")
 
-		id := "cafebabe"
+		id := Id()
 		now := time.Now()
 		shortUrl := ShortUrl{
 			Id:       id,
