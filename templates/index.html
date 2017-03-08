@@ -21,20 +21,29 @@
               <a class="nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">About</a>
+              <a class="nav-link" href="/about">About</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="#">Contact</a>
+              <a class="nav-link" href="/contact">Contact</a>
             </li>
           </ul>
         </nav>
-        <h3 class="text-muted">pow.gd</h3>
+        <h3 class="text-muted">pow.gd <small>by <a href="https://appsattic.com" target="_new">AppsAttic</a></small></h3>
       </div>
 
       <div class="jumbotron">
-        <h1 class="display-3">Jumbotron heading</h1>
-        <p class="lead">Cras justo odio, dapibus ac facilisis in, egestas eget quam. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh, ut fermentum massa justo sit amet risus.</p>
-        <p><a class="btn btn-lg btn-success" href="#" role="button">Sign up today</a></p>
+        <h1 class="display-3">Shorten your URLs</h1>
+        <p class="lead">
+          Feel free to use this service, or <a href="https://github.com/appsattic/pow.gd">download and run</a> on your
+          own servers. It's free software and free to use.
+        </p>
+        <form action="/" method="post">
+          <label>
+            <input type="text" name="url" placeholder="https://...">
+          </label>
+          <br>
+          <input type="submit" class="btn btn-success" value="Shorten"></input>
+        </form>
       </div>
 
       <div class="row marketing">

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -44,6 +45,11 @@ func main() {
 			baseUrl,
 		}
 		render(w, tmpl, "index.html", data)
+	})
+
+	m.Post("/", func(w http.ResponseWriter, r *http.Request) {
+		url := r.FormValue("url")
+		fmt.Fprintf(w, "url=%s\n", url)
 	})
 
 	// finally, check all routing was added correctly
