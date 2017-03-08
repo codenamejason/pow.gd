@@ -19,9 +19,15 @@ func fileServer(dirname string) http.Handler {
 	return http.FileServer(http.Dir(dirname))
 }
 
-func redirect(path string) func(http.ResponseWriter, *http.Request) {
+func redirectFound(path string) func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, path, http.StatusFound)
+	}
+}
+
+func redirectMovedPermanently(path string) func(http.ResponseWriter, *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, path, http.StatusMovedPermanently)
 	}
 }
 

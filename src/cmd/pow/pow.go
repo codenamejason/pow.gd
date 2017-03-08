@@ -9,10 +9,12 @@ import (
 	"time"
 
 	"github.com/boltdb/bolt"
+	"github.com/chilts/rod"
 	"github.com/gomiddleware/mux"
 )
 
 var urlBucketName = []byte("url")
+var urlBucketNameStr = "url"
 
 func check(err error) {
 	if err != nil {
@@ -67,25 +69,53 @@ func main() {
 	m.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue("url")
 
+		id := "cafebabe"
+		now := time.Now()
+		shortUrl := ShortUrl{
+			Id:       id,
+			Url:      url,
+			Inserted: now,
+			Updated:  now,
+		}
+
 		// ToDo: validate the URL, until then, just put it into the right bucket
+
 		err := db.Update(func(tx *bolt.Tx) error {
 			// get the bucket and it's next sequence number
-			b := tx.Bucket(urlBucketName)
-			id, err := b.NextSequence()
-			if err != nil {
-				return err
-			}
-
-			fmt.Printf("id=%d\n", id)
-
-			return err
+			// b := tx.Bucket(urlBucketName)
+			return rod.PutJson(tx, urlBucketNameStr, id, shortUrl)
 		})
 
 		if err != nil {
 			internalServerError(w, err)
+			return
 		}
 
 		fmt.Fprintf(w, "url=%s\n", url)
+	})
+
+	m.Get("/:id", func(w http.ResponseWriter, r *http.Request) {
+		id := mux.Vals(r)["id"]
+		fmt.Printf("id=%s\n", id)
+
+		// get the shortUrl if it exists
+		var shortUrl *ShortUrl
+		err := db.View(func(tx *bolt.Tx) error {
+			return rod.GetJson(tx, urlBucketNameStr, id, &shortUrl)
+		})
+
+		if err != nil {
+			internalServerError(w, err)
+			return
+		}
+
+		if shortUrl == nil {
+			notFound(w, r)
+			return
+		}
+
+		fmt.Printf("shortUrl=%#v\n", shortUrl)
+		http.Redirect(w, r, shortUrl.Url, http.StatusMovedPermanently)
 	})
 
 	// finally, check all routing was added correctly
