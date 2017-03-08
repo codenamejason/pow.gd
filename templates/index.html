@@ -8,13 +8,7 @@
           or <a href="https://github.com/appsattic/pow.gd">download and run</a>
           your own.
         </p>
-        <form action="/" method="post">
-          <label>
-            <input type="text" name="url" placeholder="https://...">
-          </label>
-          <br>
-          <input type="submit" class="btn btn-success" value="Shorten"></input>
-        </form>
+        {{ template "form.html" . }}
       </div>
 
       <div class="row marketing">

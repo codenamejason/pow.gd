@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/boltdb/bolt"
@@ -83,7 +84,16 @@ func main() {
 		render(w, tmpl, "index.html", data)
 	})
 
-	m.Post("/", func(w http.ResponseWriter, r *http.Request) {
+	m.Get("/new", func(w http.ResponseWriter, r *http.Request) {
+		data := struct {
+			BaseUrl string
+		}{
+			baseUrl,
+		}
+		render(w, tmpl, "new.html", data)
+	})
+
+	m.Post("/new", func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue("url")
 
 		// setup a few things
@@ -126,32 +136,46 @@ func main() {
 			return
 		}
 
-		fmt.Fprintf(w, "id=%s\n", shortUrl.Id)
-		fmt.Fprintf(w, "url=%s\n", url)
+		http.Redirect(w, r, "/"+id+"+", http.StatusFound)
 	})
 
 	m.Get("/:id", func(w http.ResponseWriter, r *http.Request) {
+		var preview bool
 		id := mux.Vals(r)["id"]
 		fmt.Printf("id=%s\n", id)
+
+		// decide if we're redirecting or viewing the preview page (https://play.golang.org/p/Mkpb9gAzN1)
+		if strings.HasSuffix(id, "+") {
+			id = strings.TrimSuffix(id, "+")
+			preview = true
+		}
 
 		// get the shortUrl if it exists
 		var shortUrl *ShortUrl
 		err := db.View(func(tx *bolt.Tx) error {
 			return rod.GetJson(tx, urlBucketNameStr, id, &shortUrl)
 		})
-
 		if err != nil {
 			internalServerError(w, err)
 			return
 		}
-
 		if shortUrl == nil {
 			notFound(w, r)
 			return
 		}
 
-		fmt.Printf("shortUrl=%#v\n", shortUrl)
-		http.Redirect(w, r, shortUrl.Url, http.StatusMovedPermanently)
+		if preview {
+			data := struct {
+				BaseUrl  string
+				ShortUrl *ShortUrl
+			}{
+				baseUrl,
+				shortUrl,
+			}
+			render(w, tmpl, "preview.html", data)
+		} else {
+			http.Redirect(w, r, shortUrl.Url, http.StatusMovedPermanently)
+		}
 	})
 
 	// finally, check all routing was added correctly
