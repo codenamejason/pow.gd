@@ -6,9 +6,13 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/boltdb/bolt"
 	"github.com/gomiddleware/mux"
 )
+
+var urlBucketName = []byte("url")
 
 func check(err error) {
 	if err != nil {
@@ -30,6 +34,19 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// open the datastore
+	db, err := bolt.Open("pow.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer db.Close()
+
+	// create the main url bucket
+	db.Update(func(tx *bolt.Tx) error {
+		_, err := tx.CreateBucketIfNotExists(urlBucketName)
+		return err
+	})
+
 	// the mux
 	m := mux.New()
 
@@ -49,6 +66,25 @@ func main() {
 
 	m.Post("/", func(w http.ResponseWriter, r *http.Request) {
 		url := r.FormValue("url")
+
+		// ToDo: validate the URL, until then, just put it into the right bucket
+		err := db.Update(func(tx *bolt.Tx) error {
+			// get the bucket and it's next sequence number
+			b := tx.Bucket(urlBucketName)
+			id, err := b.NextSequence()
+			if err != nil {
+				return err
+			}
+
+			fmt.Printf("id=%d\n", id)
+
+			return err
+		})
+
+		if err != nil {
+			internalServerError(w, err)
+		}
+
 		fmt.Fprintf(w, "url=%s\n", url)
 	})
 

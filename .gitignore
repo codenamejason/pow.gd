@@ -1,3 +1,4 @@
 /pkg/
 /bin/
 set-env-*.sh
+*.db

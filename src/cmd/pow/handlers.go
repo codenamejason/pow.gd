@@ -5,6 +5,7 @@ package main
 import (
 	"bytes"
 	"html/template"
+	"log"
 	"net/http"
 )
 
@@ -26,6 +27,11 @@ func redirect(path string) func(http.ResponseWriter, *http.Request) {
 
 func notFound(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
+}
+
+func internalServerError(w http.ResponseWriter, err error) {
+	log.Printf("Err: %s\n", err)
+	http.Error(w, err.Error(), http.StatusInternalServerError)
 }
 
 func render(w http.ResponseWriter, tmpl *template.Template, tmplName string, data interface{}) {
