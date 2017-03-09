@@ -103,10 +103,10 @@ func main() {
 		var id string
 		now := time.Now().UTC()
 		shortUrl := ShortUrl{
-			Id:       "", // filled in later
-			Url:      url,
-			Inserted: now,
-			Updated:  now,
+			Id:      "", // filled in later
+			Url:     url,
+			Created: now,
+			Updated: now,
 		}
 
 		// ToDo: validate the URL, until then, just put it into the right bucket
