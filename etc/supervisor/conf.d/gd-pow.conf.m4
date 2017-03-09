@@ -9,5 +9,5 @@ stderr_logfile = /var/log/chilts/gd-pow-stderr.log
 environment =
     POW_PORT="__POW_PORT__",
     POW_BASE_URL="__POW_BASE_URL__",
-    POW_NAKED_DOMAIN="__POW_NAKED_DOMAIN__"
+    POW_NAKED_DOMAIN="__POW_NAKED_DOMAIN__",
     POW_REDIS_ADDR="__POW_REDIS_ADDR__"
