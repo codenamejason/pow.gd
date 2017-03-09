@@ -34,9 +34,9 @@ var (
 var domainRegExp = regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
 var invalidDashRegExp = regexp.MustCompile(`(\.-)|(-\.)`)
 
-func Id() string {
+func Id(len int) string {
 	str := ""
-	for i := 0; i < 8; i++ {
+	for i := 0; i < len; i++ {
 		r := rand.Intn(idCharLen)
 		str = str + string(idChars[r])
 	}
@@ -161,7 +161,7 @@ func main() {
 			// keep generating IDs until we find a unique one
 			for {
 				// generate a new Id
-				id = Id()
+				id = Id(4)
 				fmt.Printf("id=%s\n", id)
 
 				// see if it already exists
