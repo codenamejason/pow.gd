@@ -1,12 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"html/template"
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -20,6 +23,16 @@ var urlBucketNameStr = "url"
 
 const idChars string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 const idCharLen = len(idChars)
+
+var (
+	ErrInvalidScheme            = errors.New("URL scheme must be http or https")
+	ErrInvalidHost              = errors.New("Host must contain letters/numbers, contain at least one dot and last component is at least 2 letters")
+	ErrHostCantHaveDashesHere   = errors.New("Host can't have dashes next to dots anywhere")
+	ErrHostCantBeginEndWithDash = errors.New("Host can't begin or end with a dash")
+)
+
+var domainRegExp = regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
+var invalidDashRegExp = regexp.MustCompile(`(\.-)|(-\.)`)
 
 func Id() string {
 	str := ""
@@ -38,6 +51,34 @@ func check(err error) {
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+func validateUrl(str string) (*url.URL, error) {
+	u, err := url.ParseRequestURI(str)
+	if err != nil {
+		return u, err
+	}
+
+	if u.Scheme != "https" && u.Scheme != "http" {
+		return u, ErrInvalidScheme
+	}
+
+	u.Host = strings.ToLower(u.Host)
+	if !domainRegExp.MatchString(u.Host) {
+		return u, ErrInvalidHost
+	}
+
+	// see if we match any of '.-' or '-.
+	if invalidDashRegExp.MatchString(u.Host) {
+		return u, ErrHostCantHaveDashesHere
+	}
+
+	// or if it starts or ends with a dash
+	if strings.HasPrefix(u.Host, "-") || strings.HasSuffix(u.Host, "-") {
+		return u, ErrHostCantBeginEndWithDash
+	}
+
+	return u, nil
 }
 
 func main() {
@@ -97,21 +138,26 @@ func main() {
 	})
 
 	m.Post("/new", func(w http.ResponseWriter, r *http.Request) {
-		url := r.FormValue("url")
+		// validate the URL
+		u, err := validateUrl(r.FormValue("url"))
+		if err != nil {
+			internalServerError(w, err)
+			return
+		}
+
+		fmt.Printf("url=%s\n", u)
 
 		// setup a few things
 		var id string
 		now := time.Now().UTC()
 		shortUrl := ShortUrl{
 			Id:      "", // filled in later
-			Url:     url,
+			Url:     u.String(),
 			Created: now,
 			Updated: now,
 		}
 
-		// ToDo: validate the URL, until then, just put it into the right bucket
-
-		err := db.Update(func(tx *bolt.Tx) error {
+		err = db.Update(func(tx *bolt.Tx) error {
 			// keep generating IDs until we find a unique one
 			for {
 				// generate a new Id
