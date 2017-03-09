@@ -6,13 +6,14 @@
   <form>
     <div class="form-group">
       <label for="short-url">Short URL</label>
+      <button type="button" class="btn btn-success btn-sm btn-copy" data-clipboard-target="#short-url">COPY</button>
       <input type="text" id="short-url" class="form-control" readonly value="{{ .BaseUrl }}/{{ .ShortUrl.Id }}" />
-      <small id="short-url" class="form-text text-muted">Click the box to select and copy the URL to your clipboard.</small>
+      <small id="short-url-help" class="form-text text-muted">Click the box to select and copy the URL to your clipboard.</small>
     </div>
     <div class="form-group">
       <label for="destination">Destination</label>
       <input type="text" id="destination" class="form-control" readonly value="{{ .ShortUrl.Url }}" />
-      <small id="destination" class="form-text text-muted">Where this short URL will redirect.</small>
+      <small id="destination-help" class="form-text text-muted">Where this short URL will redirect.</small>
     </div>
   </form>
   Created: {{ .ShortUrl.Created.Format "02 Jan 2006" }}
