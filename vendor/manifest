@@ -14,6 +14,20 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/garyburd/redigo/internal",
+			"repository": "https://github.com/garyburd/redigo",
+			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
+			"branch": "master",
+			"path": "/internal"
+		},
+		{
+			"importpath": "github.com/garyburd/redigo/redis",
+			"repository": "https://github.com/garyburd/redigo",
+			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
+			"branch": "master",
+			"path": "/redis"
+		},
+		{
 			"importpath": "github.com/gomiddleware/mux",
 			"repository": "https://github.com/gomiddleware/mux",
 			"revision": "cb5709b593789095df3d228080ed2bec60211349",
