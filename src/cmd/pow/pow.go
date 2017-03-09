@@ -15,6 +15,7 @@ import (
 
 	"github.com/boltdb/bolt"
 	"github.com/chilts/rod"
+	"github.com/garyburd/redigo/redis"
 	"github.com/gomiddleware/mux"
 )
 
@@ -33,6 +34,10 @@ var (
 
 var domainRegExp = regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
 var invalidDashRegExp = regexp.MustCompile(`(\.-)|(-\.)`)
+
+func now() time.Time {
+	return time.Now().UTC()
+}
 
 func Id(len int) string {
 	str := ""
@@ -81,6 +86,53 @@ func validateUrl(str string) (*url.URL, error) {
 	return u, nil
 }
 
+func incHits(pool *redis.Pool, id string) {
+	if pool == nil {
+		return
+	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	fmt.Printf("incrementing hits for %s here\n", id)
+
+	// do ALL times in UTC
+	t := now()
+	day := t.Format("20060102")
+	hour := t.Format("15")
+	fmt.Printf("time=%s\n", t)
+
+	conn.Send("MULTI")
+	conn.Send("INCR", "hits:"+id+":total")
+	conn.Send("HINCRBY", "hits:"+id+":day", day, 1)
+	conn.Send("HINCRBY", "hits:"+id+":hour", hour, 1)
+	conn.Send("SADD", "active", id)
+	_, err := conn.Do("EXEC")
+	if err != nil {
+		log.Printf("incHits: %s\n", err)
+	}
+}
+
+func getTotalHits(pool *redis.Pool, id string) (int64, error) {
+	if pool == nil {
+		return 0, nil
+	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	hits, err := redis.Int64(conn.Do("GET", "hits:"+id+":total"))
+	fmt.Printf("hits=%d\n", hits)
+	fmt.Printf("err=%s\n", err)
+	if err == redis.ErrNil {
+		return 0, nil
+	}
+	if err != nil {
+		return 0, err
+	}
+	return hits, nil
+}
+
 func main() {
 	// setup
 	nakedDomain := os.Getenv("POW_NAKED_DOMAIN")
@@ -94,6 +146,22 @@ func main() {
 	tmpl, err := template.New("").ParseGlob("./templates/*.html")
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// connect to Redis if specified
+	var redisPool *redis.Pool
+	redisAddr := os.Getenv("POW_REDIS_ADDR")
+	if redisAddr != "" {
+		log.Println("Configuring Redis")
+		redisPool = &redis.Pool{
+			MaxIdle:     3,
+			IdleTimeout: 240 * time.Second,
+			Dial: func() (redis.Conn, error) {
+				return redis.Dial("tcp", redisAddr)
+			},
+		}
+	} else {
+		log.Println("Not configuring Redis, hit counts will not function")
 	}
 
 	// open the datastore
@@ -214,15 +282,24 @@ func main() {
 		}
 
 		if preview {
+			hits, err := getTotalHits(redisPool, id)
+			if err != nil {
+				internalServerError(w, err)
+				return
+			}
+
 			data := struct {
 				BaseUrl  string
 				ShortUrl *ShortUrl
+				Hits     int64
 			}{
 				baseUrl,
 				shortUrl,
+				hits,
 			}
 			render(w, tmpl, "preview.html", data)
 		} else {
+			go incHits(redisPool, id)
 			http.Redirect(w, r, shortUrl.Url, http.StatusMovedPermanently)
 		}
 	})

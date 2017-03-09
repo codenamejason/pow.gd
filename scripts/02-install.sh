@@ -19,6 +19,7 @@ echo
 POW_PORT=`ask.sh pow POW_PORT 'Which local port should the server listen on :'`
 POW_NAKED_DOMAIN=`ask.sh pow POW_NAKED_DOMAIN 'What is the naked domain (e.g. localhost:1234 or pow.gd) :'`
 POW_BASE_URL=`ask.sh pow POW_BASE_URL 'What is the base URL (e.g. http://localhost:1234 or https://pow.gd) :'`
+POW_REDIS_ADDR=`ask.sh pow POW_REDIS_ADDR 'Which Redis server should be used for hits (e.g. ":6379") :'`
 
 echo "Building code ..."
 gb build
@@ -30,6 +31,7 @@ m4 \
     -D __POW_PORT__=$POW_PORT \
     -D __POW_NAKED_DOMAIN__=$POW_NAKED_DOMAIN \
     -D __POW_BASE_URL__=$POW_BASE_URL \
+    -D __POW_REDIS_ADDR__=$POW_REDIS_ADDR \
     etc/supervisor/conf.d/gd-pow.conf.m4 | sudo tee /etc/supervisor/conf.d/gd-pow.conf
 echo
 
@@ -44,6 +46,7 @@ m4 \
     -D __POW_PORT__=$POW_PORT \
     -D __POW_NAKED_DOMAIN__=$POW_NAKED_DOMAIN \
     -D __POW_BASE_URL__=$POW_BASE_URL \
+    -D __POW_REDIS_ADDR__=$POW_REDIS_ADDR \
     etc/caddy/vhosts/gd.pow.conf.m4 | sudo tee /etc/caddy/vhosts/gd.pow.conf
 echo
 
