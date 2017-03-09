@@ -42,6 +42,7 @@ func init() {
 
 func main() {
 	// setup
+	nakedDomain := os.Getenv("POW_NAKED_DOMAIN")
 	baseUrl := os.Getenv("POW_BASE_URL")
 	port := os.Getenv("POW_PORT")
 	if port == "" {
@@ -77,8 +78,10 @@ func main() {
 
 	m.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		data := struct {
-			BaseUrl string
+			NakedDomain string
+			BaseUrl     string
 		}{
+			nakedDomain,
 			baseUrl,
 		}
 		render(w, tmpl, "index.html", data)

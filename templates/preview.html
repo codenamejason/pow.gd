@@ -6,7 +6,7 @@
   <form>
     <div class="form-group">
       <label for="short-url">Short URL</label>
-      <input type="text" id="short-url" class="form-control" readonly value="https://{{ .BaseUrl }}/{{ .ShortUrl.Id }}" />
+      <input type="text" id="short-url" class="form-control" readonly value="{{ .BaseUrl }}/{{ .ShortUrl.Id }}" />
       <small id="short-url" class="form-text text-muted">Click the box to select and copy the URL to your clipboard.</small>
     </div>
   </form>
