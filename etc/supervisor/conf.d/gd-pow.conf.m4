@@ -1,6 +1,6 @@
 [program:gd-pow]
 directory = /home/chilts/src/appsattic-pow.gd
-command = /home/chilts/src/appsattic-pow.gd/bin/server
+command = /home/chilts/src/appsattic-pow.gd/bin/pow
 user = chilts
 autostart = true
 autorestart = true
