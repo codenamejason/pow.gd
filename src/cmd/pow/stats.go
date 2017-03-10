@@ -24,12 +24,14 @@ func incHits(pool *redis.Pool, id string) {
 	t := now()
 	day := t.Format("20060102")
 	hour := t.Format("15")
+	dotw := t.Format("Mon")
 	fmt.Printf("time=%s\n", t)
 
 	conn.Send("MULTI")
 	conn.Send("INCR", "hits:"+id+":total")
 	conn.Send("HINCRBY", "hits:"+id+":day", day, 1)
 	conn.Send("HINCRBY", "hits:"+id+":hour", hour, 1)
+	conn.Send("HINCRBY", "hits:"+id+":dotw", dotw, 1)
 	conn.Send("SADD", "active", id)
 	_, err := conn.Do("EXEC")
 	if err != nil {
@@ -94,11 +96,20 @@ func statsRand(pool *redis.Pool, db *bolt.DB) {
 	}
 	fmt.Printf("hourly = %#v\n", hourly)
 
+	// dotwly - day of the week(ly)
+	dotwly, err := redis.Int64Map(conn.Do("HGETALL", "hits:"+id+":dotw"))
+	if err != nil {
+		log.Printf("statsRand: %s\n", err)
+		return
+	}
+	fmt.Printf("dotwly = %#v\n", dotwly)
+
 	// put these stats into Bolt
 	stats := Stats{
 		Total:  total,
 		Daily:  daily,
 		Hourly: hourly,
+		DOTWly: dotwly,
 	}
 	err = db.Update(func(tx *bolt.Tx) error {
 		return rod.PutJson(tx, statsBucketNameStr, id, stats)

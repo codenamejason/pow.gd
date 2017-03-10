@@ -13,4 +13,5 @@ type Stats struct {
 	Total  int64
 	Daily  map[string]int64
 	Hourly map[string]int64
+	DOTWly map[string]int64
 }

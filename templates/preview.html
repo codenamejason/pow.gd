@@ -29,6 +29,10 @@
       {{ $hour }} = {{ $hits }}<br>
     {{ end }}
     <br>
+    Day of the Week Stats:<br>
+    {{ range $day, $hits := .DOTWly }}
+      {{ $day }} = {{ $hits }}<br>
+    {{ end }}
     <br>
   {{ else }}
     <p>No stats for this Short URL yet.</p>
