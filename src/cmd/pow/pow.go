@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"html/template"
 	"log"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -21,9 +20,8 @@ import (
 
 var urlBucketName = []byte("url")
 var urlBucketNameStr = "url"
-
-const idChars string = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
-const idCharLen = len(idChars)
+var hitBucketName = []byte("hit")
+var hitBucketNameStr = "hit"
 
 var (
 	ErrInvalidScheme            = errors.New("URL scheme must be http or https")
@@ -35,27 +33,10 @@ var (
 var domainRegExp = regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
 var invalidDashRegExp = regexp.MustCompile(`(\.-)|(-\.)`)
 
-func now() time.Time {
-	return time.Now().UTC()
-}
-
-func Id(len int) string {
-	str := ""
-	for i := 0; i < len; i++ {
-		r := rand.Intn(idCharLen)
-		str = str + string(idChars[r])
-	}
-	return str
-}
-
 func check(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-}
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
 }
 
 func validateUrl(str string) (*url.URL, error) {
@@ -84,53 +65,6 @@ func validateUrl(str string) (*url.URL, error) {
 	}
 
 	return u, nil
-}
-
-func incHits(pool *redis.Pool, id string) {
-	if pool == nil {
-		return
-	}
-
-	conn := pool.Get()
-	defer conn.Close()
-
-	fmt.Printf("incrementing hits for %s here\n", id)
-
-	// do ALL times in UTC
-	t := now()
-	day := t.Format("20060102")
-	hour := t.Format("15")
-	fmt.Printf("time=%s\n", t)
-
-	conn.Send("MULTI")
-	conn.Send("INCR", "hits:"+id+":total")
-	conn.Send("HINCRBY", "hits:"+id+":day", day, 1)
-	conn.Send("HINCRBY", "hits:"+id+":hour", hour, 1)
-	conn.Send("SADD", "active", id)
-	_, err := conn.Do("EXEC")
-	if err != nil {
-		log.Printf("incHits: %s\n", err)
-	}
-}
-
-func getTotalHits(pool *redis.Pool, id string) (int64, error) {
-	if pool == nil {
-		return 0, nil
-	}
-
-	conn := pool.Get()
-	defer conn.Close()
-
-	hits, err := redis.Int64(conn.Do("GET", "hits:"+id+":total"))
-	fmt.Printf("hits=%d\n", hits)
-	fmt.Printf("err=%s\n", err)
-	if err == redis.ErrNil {
-		return 0, nil
-	}
-	if err != nil {
-		return 0, err
-	}
-	return hits, nil
 }
 
 func main() {
@@ -171,11 +105,26 @@ func main() {
 	}
 	defer db.Close()
 
-	// create the main url bucket
+	// create the main buckets
 	db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists(urlBucketName)
-		return err
+		var err error
+
+		_, err = tx.CreateBucketIfNotExists(urlBucketName)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.CreateBucketIfNotExists(hitBucketName)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
+
+	// Set off the go-routine which deals with collecting the stats from Redis
+	// and putting them into BoltDB.
+	go stats(redisPool, db)
 
 	// the mux
 	m := mux.New()
