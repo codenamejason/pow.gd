@@ -16,8 +16,23 @@
       <small id="destination-help" class="form-text text-muted">Where this short URL will redirect.</small>
     </div>
   </form>
-  Hits: {{ .Hits }}
-  <br>
+  {{ with .Stats }}
+    Total Hits: {{ .Total }}
+    <br>
+    Daily Stats:<br>
+    {{ range $day, $hits := .Daily }}
+      {{ $day }} = {{ $hits }}<br>
+    {{ end }}
+    <br>
+    Hourly Stats:<br>
+    {{ range $hour, $hits := .Hourly }}
+      {{ $hour }} = {{ $hits }}<br>
+    {{ end }}
+    <br>
+    <br>
+  {{ else }}
+    <p>No stats for this Short URL yet.</p>
+  {{ end }}
   Created: {{ .ShortUrl.Created.Format "02 Jan 2006" }}
   <br>
 </p>

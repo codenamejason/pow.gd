@@ -37,26 +37,6 @@ func incHits(pool *redis.Pool, id string) {
 	}
 }
 
-func getTotalHits(pool *redis.Pool, id string) (int64, error) {
-	if pool == nil {
-		return 0, nil
-	}
-
-	conn := pool.Get()
-	defer conn.Close()
-
-	hits, err := redis.Int64(conn.Do("GET", "hits:"+id+":total"))
-	fmt.Printf("hits=%d\n", hits)
-	fmt.Printf("err=%s\n", err)
-	if err == redis.ErrNil {
-		return 0, nil
-	}
-	if err != nil {
-		return 0, err
-	}
-	return hits, nil
-}
-
 func stats(pool *redis.Pool, db *bolt.DB) {
 	if pool == nil {
 		log.Printf("Not setting up stats collection from Redis")
@@ -115,13 +95,13 @@ func statsRand(pool *redis.Pool, db *bolt.DB) {
 	fmt.Printf("hourly = %#v\n", hourly)
 
 	// put these stats into Bolt
-	hit := Hit{
+	stats := Stats{
 		Total:  total,
 		Daily:  daily,
 		Hourly: hourly,
 	}
 	err = db.Update(func(tx *bolt.Tx) error {
-		return rod.PutJson(tx, hitBucketNameStr, id, hit)
+		return rod.PutJson(tx, statsBucketNameStr, id, stats)
 	})
 	if err != nil {
 		log.Printf("statsRand: %s\n", err)

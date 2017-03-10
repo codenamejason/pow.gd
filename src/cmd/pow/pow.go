@@ -20,8 +20,8 @@ import (
 
 var urlBucketName = []byte("url")
 var urlBucketNameStr = "url"
-var hitBucketName = []byte("hit")
-var hitBucketNameStr = "hit"
+var statsBucketName = []byte("stats")
+var statsBucketNameStr = "stats"
 
 var (
 	ErrInvalidScheme            = errors.New("URL scheme must be http or https")
@@ -114,7 +114,7 @@ func main() {
 			return err
 		}
 
-		_, err = tx.CreateBucketIfNotExists(hitBucketName)
+		_, err = tx.CreateBucketIfNotExists(statsBucketName)
 		if err != nil {
 			return err
 		}
@@ -231,20 +231,25 @@ func main() {
 		}
 
 		if preview {
-			hits, err := getTotalHits(redisPool, id)
+			// get the stats (if it exists)
+			var stats *Stats
+			err := db.View(func(tx *bolt.Tx) error {
+				return rod.GetJson(tx, statsBucketNameStr, id, &stats)
+			})
 			if err != nil {
 				internalServerError(w, err)
 				return
 			}
+			fmt.Printf("stats=%#v\n", stats)
 
 			data := struct {
 				BaseUrl  string
 				ShortUrl *ShortUrl
-				Hits     int64
+				Stats    *Stats
 			}{
 				baseUrl,
 				shortUrl,
-				hits,
+				stats,
 			}
 			render(w, tmpl, "preview.html", data)
 		} else {
