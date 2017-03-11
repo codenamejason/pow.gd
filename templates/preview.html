@@ -34,11 +34,99 @@
       {{ $day }} = {{ $hits }}<br>
     {{ end }}
     <br>
+    <div class="row">
+      <div class="col">
+      </div>
+      <div class="col">
+        <h3>Day of the Week</h3>
+        <canvas id="chart-dotw" height="200"></canvas>
+      </div>
+    </div>
+    <h3>Hour</h3>
+    <canvas id="chart-hour" height="200"></canvas>
   {{ else }}
     <p>No stats for this Short URL yet.</p>
   {{ end }}
+  <br>
   Created: {{ .ShortUrl.Created.Format "02 Jan 2006" }}
   <br>
 </p>
+
+<script>
+  var __POW__ = __POW__ || {};
+
+  (function(app) {
+
+    // hour
+    app.hourData = {
+      labels: [
+        "00", "01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11",
+        "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23",
+      ],
+      datasets: [
+        {
+          label: "Hour",
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+          data: [
+            {{ index .Stats.Hourly "00" }},
+            {{ index .Stats.Hourly "01" }},
+            {{ index .Stats.Hourly "02" }},
+            {{ index .Stats.Hourly "03" }},
+            {{ index .Stats.Hourly "04" }},
+            {{ index .Stats.Hourly "05" }},
+            {{ index .Stats.Hourly "06" }},
+            {{ index .Stats.Hourly "07" }},
+            {{ index .Stats.Hourly "08" }},
+            {{ index .Stats.Hourly "09" }},
+            {{ index .Stats.Hourly "10" }},
+            {{ index .Stats.Hourly "11" }},
+            {{ index .Stats.Hourly "12" }},
+            {{ index .Stats.Hourly "13" }},
+            {{ index .Stats.Hourly "14" }},
+            {{ index .Stats.Hourly "15" }},
+            {{ index .Stats.Hourly "16" }},
+            {{ index .Stats.Hourly "17" }},
+            {{ index .Stats.Hourly "18" }},
+            {{ index .Stats.Hourly "19" }},
+            {{ index .Stats.Hourly "20" }},
+            {{ index .Stats.Hourly "21" }},
+            {{ index .Stats.Hourly "22" }},
+            {{ index .Stats.Hourly "23" }},
+          ],
+        }
+      ]
+    }
+
+    // dotw
+    app.dotwData = {
+      labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      datasets: [
+        {
+          label: "Day of the Week",
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 1,
+          data: [
+            {{ index .Stats.DOTWly "Mon" }},
+            {{ index .Stats.DOTWly "Tue" }},
+            {{ index .Stats.DOTWly "Wed" }},
+            {{ index .Stats.DOTWly "Thu" }},
+            {{ index .Stats.DOTWly "Fri" }},
+            {{ index .Stats.DOTWly "Sat" }},
+            {{ index .Stats.DOTWly "Sun" }},
+          ],
+        }
+      ]
+    }
+
+  }(__POW__))
+
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.17.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<script src="/s/js/preview.js"></script>
 
 {{ template "footer.html" . }}
