@@ -17,33 +17,32 @@
     </div>
   </form>
   {{ with .Stats }}
-    Total Hits: {{ .Total }}
-    <br>
-    Daily Stats:<br>
-    {{ range $day, $hits := .Daily }}
-      {{ $day }} = {{ $hits }}<br>
-    {{ end }}
-    <br>
-    Hourly Stats:<br>
-    {{ range $hour, $hits := .Hourly }}
-      {{ $hour }} = {{ $hits }}<br>
-    {{ end }}
-    <br>
-    Day of the Week Stats:<br>
-    {{ range $day, $hits := .DOTWly }}
-      {{ $day }} = {{ $hits }}<br>
-    {{ end }}
-    <br>
+    <h3>Hits</h3>
+    <p>
+      Total Hits: {{ .Total }}
+    </p>
+
     <div class="row">
       <div class="col">
-      </div>
-      <div class="col">
-        <h3>Day of the Week</h3>
+        <h4>Day of the Week</h4>
         <canvas id="chart-dotw" height="200"></canvas>
       </div>
+      <div class="col">
+        <h4>Hour</h4>
+        <canvas id="chart-hour" height="200"></canvas>
+      </div>
     </div>
-    <h3>Hour</h3>
-    <canvas id="chart-hour" height="200"></canvas>
+
+    <h4>Daily Stats</h4>
+    {{ with .Daily }}
+      <ul>
+      {{ range $day, $hits := . }}
+        <li>{{ $day }} = {{ $hits }}</li>
+      {{ end }}
+      </ul>
+    {{ else }}
+      <p>No hits have been aggregated yet.</p>
+    {{ end }}
   {{ else }}
     <p>No stats for this Short URL yet.</p>
   {{ end }}
