@@ -15,6 +15,8 @@ import (
 	"github.com/boltdb/bolt"
 	"github.com/chilts/rod"
 	"github.com/garyburd/redigo/redis"
+	"github.com/gomiddleware/logger"
+	"github.com/gomiddleware/logit"
 	"github.com/gomiddleware/mux"
 )
 
@@ -68,6 +70,9 @@ func validateUrl(str string) (*url.URL, error) {
 }
 
 func main() {
+	// setup the logger
+	lgr := logit.New(os.Stdout, "pow")
+
 	// setup
 	nakedDomain := os.Getenv("POW_NAKED_DOMAIN")
 	baseUrl := os.Getenv("POW_BASE_URL")
@@ -128,6 +133,8 @@ func main() {
 
 	// the mux
 	m := mux.New()
+
+	m.Use("/", logger.NewLogger(lgr))
 
 	// do some static routes before doing logging
 	m.All("/s", fileServer("static"))
@@ -210,6 +217,9 @@ func main() {
 		id := mux.Vals(r)["id"]
 		fmt.Printf("id=%s\n", id)
 
+		lgr := logger.LogFromRequest(r)
+		lgr.WithField("ShortUrlId", id)
+
 		// decide if we're redirecting or viewing the preview page (https://play.golang.org/p/Mkpb9gAzN1)
 		if strings.HasSuffix(id, "+") {
 			id = strings.TrimSuffix(id, "+")
@@ -226,6 +236,7 @@ func main() {
 			return
 		}
 		if shortUrl == nil {
+			lgr.Log("no-short-url-found")
 			notFound(w, r)
 			return
 		}
@@ -242,6 +253,7 @@ func main() {
 			}
 			fmt.Printf("stats=%#v\n", stats)
 
+			lgr.Log("preview.html")
 			data := struct {
 				BaseUrl  string
 				ShortUrl *ShortUrl
