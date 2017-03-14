@@ -11,7 +11,8 @@ import (
 func handler(lgr *logit.Logger) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		lgr := logger.LogFromRequest(r)
-		lgr.Log("inside handler")
+		lgr.Print("handler-start")
+
 		w.Write([]byte(r.URL.Path))
 	}
 }

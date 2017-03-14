@@ -43,14 +43,14 @@ func (l *Logger) Clone(sys string) *Logger {
 }
 
 func (l *Logger) WithField(key string, value interface{}) {
-	if key == "time" {
-		panic("logit: key=time is not allowed")
+	if key == "ts" {
+		panic("logit: key=ts is not allowed")
 	}
 	if key == "sys" {
 		panic("logit: key=sys is not allowed")
 	}
-	if key == "msg" {
-		panic("logit: key=msg is not allowed")
+	if key == "evt" {
+		panic("logit: key=evt is not allowed")
 	}
 	if key == "err" {
 		panic("logit: key=err is not allowed")
@@ -61,29 +61,38 @@ func (l *Logger) WithField(key string, value interface{}) {
 	l.fields[key] = value
 }
 
-// Log just logs a message to the output. It doesn't do anything special.
-func (l *Logger) Log(msg string) error {
-	return l.Output(msg)
+// Print just logs a message to the output. It doesn't do anything special.
+func (l *Logger) Print(evt string) error {
+	return l.Output(evt)
 }
 
-// Fatal is equivalent to Log() followed by a call to os.Exit(1).
-func (l *Logger) Fatal(msg string) {
-	l.Output(msg)
+// Fatal is equivalent to Print() followed by a call to os.Exit(1).
+func (l *Logger) Fatal(evt string) {
+	l.Output(evt)
 	os.Exit(1)
 }
 
+// Panic is equivalent to Print() followed by a call to panic(evt).
+func (l *Logger) Panic(evt string) {
+	l.Output(evt)
+	panic(evt)
+}
+
 // Output writes the output for a logging event.
-func (l *Logger) Output(msg string) error {
+func (l *Logger) Output(evt string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
 	// time
-	str := "time="
+	str := "ts="
 	str += time.Now().UTC().Format("20060102-150405.000000000")
 	str += " "
 
 	// sys
 	str += "sys=" + l.sys + " "
+
+	// message
+	str += "evt=" + evt
 
 	// now do all of the fields
 	for k, v := range l.fields {
@@ -99,9 +108,6 @@ func (l *Logger) Output(msg string) error {
 			str += k + "=" + "(unknown type) "
 		}
 	}
-
-	// message
-	str += "msg=" + msg
 
 	// newline
 	str += "\n"

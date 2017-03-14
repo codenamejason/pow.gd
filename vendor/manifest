@@ -36,13 +36,13 @@
 		{
 			"importpath": "github.com/gomiddleware/logger",
 			"repository": "https://github.com/gomiddleware/logger",
-			"revision": "3e2e6ebe25c30b3c6f597d9dd83680326f53292a",
+			"revision": "a4a78606e8f0d2b3fd6ffca809ed68d870101741",
 			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gomiddleware/logit",
 			"repository": "https://github.com/gomiddleware/logit",
-			"revision": "88a60009f3335763c0ef7410407a661ac1929618",
+			"revision": "9d0b354918cad6c85d6843a804fc54526e633b58",
 			"branch": "master"
 		},
 		{
