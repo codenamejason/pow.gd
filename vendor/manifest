@@ -14,6 +14,12 @@
 			"branch": "master"
 		},
 		{
+			"importpath": "github.com/chilts/sid",
+			"repository": "https://github.com/chilts/sid",
+			"revision": "6cf658ffc40cc14559db7af19fdae2ac0bf3d780",
+			"branch": "master"
+		},
+		{
 			"importpath": "github.com/garyburd/redigo/internal",
 			"repository": "https://github.com/garyburd/redigo",
 			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
@@ -26,6 +32,18 @@
 			"revision": "0d253a66e6e1349f4581d6d2b300ee434ee2da9f",
 			"branch": "master",
 			"path": "/redis"
+		},
+		{
+			"importpath": "github.com/gomiddleware/logger",
+			"repository": "https://github.com/gomiddleware/logger",
+			"revision": "3e2e6ebe25c30b3c6f597d9dd83680326f53292a",
+			"branch": "master"
+		},
+		{
+			"importpath": "github.com/gomiddleware/logit",
+			"repository": "https://github.com/gomiddleware/logit",
+			"revision": "88a60009f3335763c0ef7410407a661ac1929618",
+			"branch": "master"
 		},
 		{
 			"importpath": "github.com/gomiddleware/mux",
