@@ -40,9 +40,8 @@ func stats(pool *redis.Pool, db *bolt.DB) {
 		return
 	}
 
-	// every 10s, hit redis for 'active' ShortURLs
-	// duration := time.Duration(10) * time.Second
-	duration := time.Duration(3) * time.Second
+	// every 15s, hit redis for 'active' ShortURLs
+	duration := time.Duration(15) * time.Second
 
 	ticker := time.NewTicker(duration)
 	for t := range ticker.C {
