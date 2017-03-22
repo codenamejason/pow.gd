@@ -24,6 +24,8 @@ var urlBucketName = []byte("url")
 var urlBucketNameStr = "url"
 var statsBucketName = []byte("stats")
 var statsBucketNameStr = "stats"
+var doneBucketName = []byte("done") // as in "stats-done"
+var doneBucketNameStr = "done"      // as in "stats-done"
 
 var (
 	ErrInvalidScheme            = errors.New("URL scheme must be http or https")
@@ -90,8 +92,9 @@ func main() {
 	// connect to Redis if specified
 	var redisPool *redis.Pool
 	redisAddr := os.Getenv("POW_REDIS_ADDR")
+	lgr.Print("redis-addr")
 	if redisAddr != "" {
-		log.Println("Configuring Redis")
+		fmt.Println("Configuring Redis")
 		redisPool = &redis.Pool{
 			MaxIdle:     3,
 			IdleTimeout: 240 * time.Second,
@@ -99,8 +102,10 @@ func main() {
 				return redis.Dial("tcp", redisAddr)
 			},
 		}
+		lgr.Print("redis-configured")
 	} else {
-		log.Println("Not configuring Redis, hit counts will not function")
+		fmt.Println("Not configuring Redis, hit counts will not function")
+		lgr.Print("redis-not-configured")
 	}
 
 	// open the datastore
@@ -127,8 +132,9 @@ func main() {
 		return nil
 	})
 
-	// Set off the go-routine which deals with collecting the stats from Redis
-	// and putting them into BoltDB.
+	// For now, just read in the old stats and write them out to BoltDB.
+	statsOld(redisPool, db)
+	// Run the stats at regular intervals to process the hits from the previous hour.
 	go stats(redisPool, db)
 
 	// the mux
@@ -236,14 +242,14 @@ func main() {
 			return
 		}
 		if shortUrl == nil {
-			lgr.Log("no-short-url-found")
+			lgr.Print("no-short-url-found")
 			notFound(w, r)
 			return
 		}
 
 		if preview {
 			// get the stats (if it exists)
-			var stats *Stats
+			stats := Stats{}
 			err := db.View(func(tx *bolt.Tx) error {
 				return rod.GetJson(tx, statsBucketNameStr, id, &stats)
 			})
@@ -253,7 +259,7 @@ func main() {
 			}
 			fmt.Printf("stats=%#v\n", stats)
 
-			lgr.Log("preview.html")
+			lgr.Print("rendering-preview")
 			data := struct {
 				BaseUrl  string
 				ShortUrl *ShortUrl
@@ -261,7 +267,7 @@ func main() {
 			}{
 				baseUrl,
 				shortUrl,
-				stats,
+				&stats,
 			}
 			render(w, tmpl, "preview.html", data)
 		} else {
@@ -274,7 +280,7 @@ func main() {
 	check(m.Err)
 
 	// server
-	log.Printf("Starting server, listening on port %s\n", port)
+	fmt.Printf("Starting server, listening on port %s\n", port)
 	errServer := http.ListenAndServe(":"+port, m)
 	check(errServer)
 }
