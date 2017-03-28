@@ -85,9 +85,7 @@ func main() {
 
 	// load up all templates
 	tmpl, err := template.New("").ParseGlob("./templates/*.html")
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 
 	// connect to Redis if specified
 	var redisPool *redis.Pool
@@ -110,13 +108,11 @@ func main() {
 
 	// open the datastore
 	db, err := bolt.Open("pow.db", 0600, &bolt.Options{Timeout: 1 * time.Second})
-	if err != nil {
-		log.Fatal(err)
-	}
+	check(err)
 	defer db.Close()
 
 	// create the main buckets
-	db.Update(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		var err error
 
 		_, err = tx.CreateBucketIfNotExists(urlBucketName)
@@ -131,6 +127,7 @@ func main() {
 
 		return nil
 	})
+	check(err)
 
 	// For now, just read in the old stats and write them out to BoltDB.
 	statsOld(redisPool, db)
