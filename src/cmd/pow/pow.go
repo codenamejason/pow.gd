@@ -129,8 +129,6 @@ func main() {
 	})
 	check(err)
 
-	// For now, just read in the old stats and write them out to BoltDB.
-	statsOld(redisPool, db)
 	// Run the stats at regular intervals to process the hits from the previous hour.
 	go stats(redisPool, db)
 
