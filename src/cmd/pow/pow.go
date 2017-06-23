@@ -186,7 +186,7 @@ func main() {
 			// keep generating IDs until we find a unique one
 			for {
 				// generate a new Id
-				id = Id(4)
+				id = Id(6)
 				fmt.Printf("id=%s\n", id)
 
 				// see if it already exists
