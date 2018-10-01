@@ -115,7 +115,12 @@ func main() {
 	err = db.Update(func(tx *bolt.Tx) error {
 		var err error
 
-		_, err = tx.CreateBucketIfNotExists(urlBucketName)
+		urlBucket, err := tx.CreateBucketIfNotExists(urlBucketName)
+		if err != nil {
+			return err
+		}
+
+		err = urlBucket.Delete([]byte("/RToXsy"))
 		if err != nil {
 			return err
 		}
