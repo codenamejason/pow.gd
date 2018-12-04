@@ -15,7 +15,7 @@ fmt:
 build: fmt
 	gb build all
 
-pow: build
+start: build
 	./bin/pow
 
 test:

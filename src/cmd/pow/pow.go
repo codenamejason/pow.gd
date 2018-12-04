@@ -37,6 +37,8 @@ var (
 var domainRegExp = regexp.MustCompile(`^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$`)
 var invalidDashRegExp = regexp.MustCompile(`(\.-)|(-\.)`)
 
+var toDelete = []string{"RToXsy", "iyzqGc"}
+
 func check(err error) {
 	if err != nil {
 		log.Fatal(err)
@@ -120,10 +122,16 @@ func main() {
 			return err
 		}
 
-		err = urlBucket.Delete([]byte("/RToXsy"))
-		if err != nil {
-			return err
+		// delete abusive URLs
+		fmt.Printf("Removing URLs ...\n")
+		for _, v := range toDelete {
+			fmt.Printf("Removing URL=%s\n", v)
+			err = urlBucket.Delete([]byte(v))
+			if err != nil {
+				return err
+			}
 		}
+		fmt.Printf("Done\n")
 
 		_, err = tx.CreateBucketIfNotExists(statsBucketName)
 		if err != nil {
